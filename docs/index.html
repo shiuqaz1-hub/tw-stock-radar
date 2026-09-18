@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>股市大富翁 - 模擬盤</title>
+  <style>
+    :root {
+      --bg-deep: #05080d;
+      --bg-mid: #0d1117;
+      --panel: rgba(16, 20, 28, 0.9);
+      --text: #f3f5f8;
+      --muted: rgba(236, 240, 245, 0.7);
+      --brand: #f2d3b8;
+      --brand-strong: #ff7f50;
+      --brand-glow: rgba(255, 130, 70, 0.65);
+      --button-soft: #f7d7cb;
+      --button-text: #a15c3d;
+      --shadow: rgba(255, 128, 64, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      background:
+        radial-gradient(circle at 50% 55%, rgba(165, 71, 32, 0.42), transparent 28%),
+        linear-gradient(180deg, #020406 0%, #090d12 30%, #070b10 100%);
+    }
+
+    .screen {
+      position: relative;
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      min-height: 760px;
+      background: linear-gradient(180deg, rgba(3,5,9,0.98), rgba(8,12,17,0.96));
+      overflow: hidden;
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: 0.04em;
+      z-index: 5;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0.95;
+    }
+
+    .signal-icons {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      opacity: 0.92;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f8fafc;
+      display: inline-block;
+    }
+
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #f8fafc;
+      opacity: 0.95;
+    }
+
+    .signal-bars {
+      display: flex;
+      align-items: end;
+      gap: 2px;
+      height: 16px;
+    }
+
+    .signal-bars span {
+      display: block;
+      width: 2px;
+      background: #f8fafc;
+      border-radius: 2px;
+    }
+
+    .signal-bars span:nth-child(1) { height: 4px; }
+    .signal-bars span:nth-child(2) { height: 7px; }
+    .signal-bars span:nth-child(3) { height: 10px; }
+    .signal-bars span:nth-child(4) { height: 14px; }
+
+    .top-nav {
+      position: absolute;
+      top: 62px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 18px;
+      z-index: 5;
+    }
+
+    .menu-wrap {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .menu {
+      width: 22px;
+      height: 22px;
+      position: relative;
+      filter: brightness(1.2);
+    }
+
+    .menu::before,
+    .menu::after,
+    .menu span {
+      content: "";
+      position: absolute;
+      left: 50%;
+      width: 18px;
+      height: 2px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.9);
+      transform: translateX(-50%);
+    }
+
+    .menu::before { top: 5px; }
+    .menu::after { bottom: 5px; }
+    .menu span { top: 10px; }
+
+    .nav-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.95);
+      margin-left: 4px;
+    }
+
+    .close {
+      width: 26px;
+      height: 26px;
+      position: relative;
+      opacity: 0.9;
+    }
+
+    .close::before,
+    .close::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22px;
+      height: 2px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 2px;
+      transform-origin: center;
+    }
+    .close::before { transform: translate(-50%, -50%) rotate(45deg); }
+    .close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+    .brand {
+      position: absolute;
+      top: 132px;
+      width: 100%;
+      text-align: center;
+      z-index: 3;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .brand-line {
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .brand-name {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #ebf1f8;
+      text-shadow: 0 0 18px rgba(255,255,255,0.18);
+    }
+
+    .flame-wrap {
+      position: absolute;
+      left: 50%;
+      top: 42%;
+      transform: translate(-50%, -50%);
+      width: 340px;
+      height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      filter: drop-shadow(0 0 30px rgba(255, 125, 58, 0.42));
+    }
+
+    .flame {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      border-radius: 28px;
+      background: radial-gradient(circle at 50% 35%, rgba(255,245,235,0.95), rgba(255,190,120,0.8) 18%, rgba(255,130,60,0.48) 42%, rgba(120,41,18,0.18) 72%, rgba(0,0,0,0) 100%);
+      box-shadow:
+        0 0 60px rgba(255, 136, 60, 0.38),
+        0 0 120px rgba(255, 108, 38, 0.18);
+      opacity: 0.96;
+      animation: flicker 2.6s ease-in-out infinite alternate;
+    }
+
+    .flame::before {
+      content: "許";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 190px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.96);
+      letter-spacing: -0.08em;
+      line-height: 1;
+      text-shadow: 0 0 22px rgba(255,255,255,0.82), 0 0 40px rgba(255, 180, 120, 0.8);
+      filter: blur(0.3px);
+    }
+
+    .flame::after {
+      content: "";
+      position: absolute;
+      inset: 12% 12% 12% 12%;
+      border-radius: 30px;
+      background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12), rgba(255,255,255,0) 60%);
+    }
+
+    @keyframes flicker {
+      0% { transform: scale(0.98) rotate(-1deg); opacity: 0.9; }
+      50% { transform: scale(1.02) rotate(1deg); opacity: 1; }
+      100% { transform: scale(1) rotate(-0.5deg); opacity: 0.98; }
+    }
+
+    .start-btn-wrap {
+      position: absolute;
+      left: 50%;
+      bottom: 118px;
+      width: min(84%, 360px);
+      transform: translateX(-50%);
+      z-index: 4;
+    }
+
+    .start-btn {
+      width: 100%;
+      height: 62px;
+      border: 1px solid rgba(244, 203, 179, 0.7);
+      border-radius: 32px;
+      background: rgba(247, 215, 203, 0.9);
+      box-shadow: 0 0 24px rgba(255, 141, 70, 0.2);
+      color: var(--button-text);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .start-btn:hover { opacity: 0.96; }
+    .start-btn:active { transform: scale(0.98); }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      bottom: 68px;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: rgba(255,255,255,0.58);
+      text-align: center;
+      z-index: 4;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .bottom-nav {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(7, 10, 16, 0.78);
+      z-index: 5;
+    }
+
+    .nav-icon {
+      width: 26px;
+      height: 26px;
+      position: relative;
+      opacity: 0.82;
+    }
+
+    .nav-icon.bar {
+      border-radius: 6px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.32));
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    .nav-icon.circle {
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.8);
+    }
+
+    .nav-icon.arrow {
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 6px;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+      width: 18px;
+      height: 18px;
+      margin-top: -4px;
+    }
+
+    .nav-icon.home {
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 4px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .nav-icon.home::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 4px;
+      transform: translateX(-50%);
+      width: 10px;
+      height: 10px;
+      border-left: 2px solid rgba(255,255,255,0.8);
+      border-top: 2px solid rgba(255,255,255,0.8);
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    @media (max-width: 420px) {
+      .screen {
+        max-width: 100vw;
+      }
+      .flame-wrap {
+        width: 300px;
+        height: 300px;
+      }
+      .flame {
+        width: 220px;
+        height: 220px;
+      }
+      .flame::before {
+        font-size: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <div class="status-bar">
+      <div class="status-left">
+        <span>22:37</span>
+        <div class="signal-icons">
+          <span>◔</span>
+          <span>◍</span>
+          <span>◉</span>
+        </div>
+      </div>
+      <div class="status-right">
+        <div class="signal-bars">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <span>68</span>
+      </div>
+    </div>
+
+    <div class="top-nav">
+      <div class="menu-wrap">
+        <div class="menu"><span></span></div>
+        <div class="nav-title">股市大富翁</div>
+      </div>
+      <div class="close"></div>
+    </div>
+
+    <div class="brand">
+      <div class="brand-line">許 家 模 擬 股 票</div>
+      <div class="brand-name">股市大富翁</div>
+    </div>
+
+    <div class="flame-wrap">
+      <div class="flame"></div>
+    </div>
+
+    <div class="start-btn-wrap">
+      <button class="start-btn" onclick="window.location.href='ai-trading-dashboard.html'">進入模擬盤</button>
+    </div>
+
+    <div class="hint">點擊畫面即可進入・連動台股開收盤</div>
+
+    <div class="bottom-nav">
+      <div class="nav-icon bar"></div>
+      <div class="nav-icon circle"></div>
+      <div class="nav-icon arrow"></div>
+      <div class="nav-icon home"></div>
+    </div>
+  </div>
+</body>
+</html>
