@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFC">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/detailTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="台積電"
+            android:textColor="#0F172A"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/detailCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2330"
+            android:textColor="#64748B"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/detailPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="1,080.00"
+            android:textColor="#0F172A"
+            android:textSize="34sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/detailChange"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="+15.00  +1.41%"
+            android:textColor="#DC2626"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/detailStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="市場狀態：開盤中"
+            android:textColor="#2563EB"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="#FFFFFF">
+
+            <TextView
+                android:id="@+id/metricOpen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="開盤：1,070.00"
+                android:textColor="#334155"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/metricHigh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="最高：1,085.00"
+                android:textColor="#334155"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/metricLow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="最低：1,065.00"
+                android:textColor="#334155"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/metricVolume"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="成交量：1,250,000"
+                android:textColor="#334155"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/metricTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="更新時間：14:32:00"
+                android:textColor="#334155"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="最近走勢"
+            android:textColor="#0F172A"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <com.shiuqaz1hub.twstockradar.StockChartView
+            android:id="@+id/chartView"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="8dp"
+            android:background="#FFFFFF" />
+    </LinearLayout>
+</ScrollView>
