@@ -1,36 +1,41 @@
-# 台股雷達 Android App
+# AI 模擬股票交易系統
 
-這是一個台股雷達 Android App，包含：
+這個 repo 現在已包含一個模擬交易架構，重點是：
 
-- 自選股行情列表
-- 即時 TWSE 公開行情抓取
-- 新增 / 刪除自選股
-- 搜尋股票名稱或代號
-- 詳細資訊頁面
-- 市場狀態判斷（開盤中、已收盤、休市）
-- 簡易 K 線風格走勢圖
+- 帳戶 4：AI 當沖
+- 帳戶 5：AI 波段
+- 交易與績效紀錄
+- 本地模擬判斷邏輯
+- 一個可檢視歷史交易的靜態儀表板
+- 不會連接真實券商
 
-目前支援：
-- 台積電、聯發科、鴻海、元大台灣50、中華電等自選股
-- 可新增更多股票代號
-- 盤中會持續更新行情資訊
+## 主要內容
 
-此版本以 TWSE 公開 API 為基礎，提供免費行情讀取；若需要官方電子報價 / 毫秒級即時串流，通常須另行申請授權及對應資料服務。
+- `app/src/main/java/com/shiuqaz1hub/twstockradar/SimulationEngine.kt`
+  - 交易訊號與帳戶摘要邏輯
+- `app/src/main/java/com/shiuqaz1hub/twstockradar/SimulationDemoData.kt`
+  - 範例歷史交易紀錄
+- `docs/ai-trading-dashboard.html`
+  - 用於查看帳戶 4 / 5 的模擬交易歷史與績效
 
-## 建置方式
+## 使用方式
 
-1. 開啟 Android Studio
-2. 選擇 Open
-3. 打開 `tw-stock-radar` 專案
-4. 等待 Gradle 同步完成
-5. 執行 Android Emulator 或實體裝置
+1. 打開 `docs/ai-trading-dashboard.html`
+2. 在瀏覽器中預覽
+3. 可觀察範例帳戶資料與 AI 判斷紀錄
 
-## 需求
+## 設計原則
 
-- Android Studio Ladybug 或更新版本
-- Android SDK 35
-- JDK 17
+- 不連接真實券商 API
+- 不執行真實下單
+- 交易資料只保留於模擬環境
+- 可擴充成 Web + Backend + Database 版本
 
-## 套件
+## 後續擴充建議
 
-- `com.shiuqaz1hub.twstockradar`
+- 儲存交易紀錄進資料庫（PostgreSQL / SQLite）
+- 建立 Web Dashboard + 登入系統
+- 增加持倉、損益、勝率、最大回撤
+- 增加策略回測功能
+- 改成每分鐘/每日由排程自動更新
+- 將這個模擬交易邏輯擴充進後端服務
