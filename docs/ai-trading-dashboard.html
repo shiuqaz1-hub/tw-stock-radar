@@ -8,7 +8,7 @@
 </head>
 <body><div class="app">
 <div class="status"><span>22:39　◔ ◍ ◉</span><span>4G+　▮▮▮ 67</span></div><div class="top"><span>☰</span><h1>股市大富翁</h1><span class="close">×</span></div><div class="site">●　台股休市・AI 仍可預約下一盤，開盤後自動撮合</div>
-<div class="head"><div class="headrow"><div class="brand"><div class="mark">許</div><div><div class="tiny">許家模擬股票</div><div class="name">股市大富翁</div></div></div><button class="pill" id="accountButton">帳戶 1・主控</button></div><div class="row muted" style="margin-top:12px;font-size:13px"><span>● 模擬模式</span><b class="gold">可操作帳戶 1／2／3</b></div><div class="index"><span class="muted">加權指數<strong>47,180.75</strong></span><b class="red">+1.93%</b></div><div class="mini"><div>可用資金<b id="cashTop">$5,000,000</b></div><div>上漲<b class="red">62</b></div><div>下跌<b class="green">29</b></div><div>模式<b class="gold">模擬</b></div></div></div>
+<div class="head"><div class="headrow"><div class="brand"><div class="mark">許</div><div><div class="tiny">許家模擬股票</div><div class="name">股市大富翁</div></div></div><button class="pill" id="accountButton">帳戶 1・主控</button></div><div class="row muted" style="margin-top:12px;font-size:13px"><span>● 模擬模式</span><b class="gold">可操作帳戶 1／2／3</b></div><div class="index"><span class="muted">加權指數<strong id="indexValue">--</strong></span><b id="indexChange" class="red">--</b></div><div class="mini"><div>可用資金<b id="cashTop">$5,000,000</b></div><div>上漲<b id="upCount" class="red">--</b></div><div>下跌<b id="downCount" class="green">--</b></div><div>模式<b class="gold">模擬</b></div></div></div>
 <main>
 <section id="radar" class="page active section"><h2>台股即時排行</h2><div class="tabs" id="marketTabs"><button class="active" data-market="全部">全部</button><button data-market="上市">上市</button><button data-market="上櫃">上櫃</button></div><div class="tabs" id="sortTabs"><button class="active" data-sort="change">漲幅排行</button><button data-sort="fall">跌幅排行</button><button data-sort="volume">成交量</button></div><input id="search" class="search" placeholder="搜尋代碼或名稱"><div id="stockList" class="stock-list"></div><div class="card"><h3>AI 交易參考</h3><p class="muted">帳戶 4 當沖與帳戶 5 波段為 AI 自動模擬，無法由你直接下單；你可以查看它們的持股、成交與策略，作為帳戶 1～3 的參考。</p><div id="aiReference"></div></div></section>
 <section id="orders" class="page section"><h2>詳細模擬下單</h2><div class="card notice">只允許帳戶 1、2、3 操作。帳戶 4「AI 當沖」與帳戶 5「AI 波段」為唯讀參考，不能手動下單。所有資料只存在本次瀏覽器模擬中。</div><div class="card"><h3>選擇操作帳戶</h3><div class="account-grid" id="accountPicker"></div></div><div class="card form"><h3>委託內容</h3><label>股票代碼或名稱</label><input id="orderCode" class="input" value="2330" placeholder="例如 2330 或 台積電"><label>交易方向</label><div class="seg"><button id="buyTab" class="active">買進</button><button id="sellTab">賣出</button><button id="cancelTab">清除</button></div><label>交易類別</label><div class="seg"><button id="boardTab" class="active">整股</button><button id="oddTab">零股</button><button id="marketTab">市價模擬</button></div><label>委託價格（限價單可調）</label><div class="row"><button class="btn" id="minusPrice">−</button><input id="orderPrice" class="input" type="number" value="2460"><button class="btn" id="plusPrice">＋</button></div><label>委託數量（股）</label><div class="row"><button class="btn" id="minusQty">−</button><input id="orderQty" class="input" type="number" min="1" value="1000"><button class="btn" id="plusQty">＋</button></div><div class="row muted"><span>可買餘額</span><span id="availableCash">$5,000,000</span></div><div class="order-summary"><p><span>股票</span><b id="summaryCode">2330</b></p><p><span>方向／類別</span><b id="summarySide">買進／整股</b></p><p><span>預估成交金額</span><b id="estimatedValue">$2,460,000</b></p><p><span>模擬手續費</span><b id="estimatedFee">$3,690</b></p><p><span>預估總金額</span><b id="estimatedTotal">$2,463,690</b></p></div><button id="submitOrder" class="btn buy wide">送出模擬委託</button><div id="orderResult" class="muted" style="margin-top:12px;text-align:center">尚未送出委託</div></div></section>
@@ -16,14 +16,92 @@
 <section id="ranking" class="page section"><h2>富翁榜與其他功能</h2><div class="card"><h3>模擬排行榜</h3><div class="row"><span>🥇 玩家帳戶 1</span><b>$5,000,000</b></div><div class="row"><span>🥈 AI 帳戶 4</span><b>$5,000,000</b></div><div class="row"><span>🥉 AI 帳戶 5</span><b>$5,000,000</b></div></div><div class="card"><h3>帳戶權限</h3><p class="green">✓ 帳戶 1／2／3：可手動模擬下單</p><p class="gold">◉ 帳戶 4：AI 當沖，只可查看</p><p class="gold">◉ 帳戶 5：AI 波段，只可查看</p></div></section>
 </main><nav class="bottom"><button class="active" data-page="radar">◉<br>雷達</button><button data-page="orders">◫<br>下單</button><button data-page="inventory">▣<br>庫存</button><button data-page="ranking">🏆<br>富翁榜</button><button data-page="ranking">▤<br>排行</button></nav><div id="toast" class="toast"></div></div>
 <script>
-const stocks=[['京元電子','2449','上市','半導體',291.5,10,61178],['宏致','3605','上市','電子零組件',154,10,37969],['世紀','5314','上櫃','其他',30.5,9.91,123120],['聯電','2303','上市','半導體',156,5.76,300960],['華邦電','2344','上市','半導體',179.5,5.59,138585],['合晶','6182','上櫃','半導體',116,4.98,64336],['聯發科','2454','上市','半導體',4710,4.67,8991],['和益','1709','上市','化學',39.2,-8.73,48188],['中信金','2891','上市','金融',69.5,-2.39,74372],['玉山金','2884','上市','金融',46.4,-1.9,91401]];
-const accountNames={1:'帳戶 1・主控',2:'帳戶 2・主控',3:'帳戶 3・主控',4:'帳戶 4・AI 當沖',5:'帳戶 5・AI 波段'};const accounts={};for(let i=1;i<=5;i++)accounts[i]={name:accountNames[i],cash:5000000,holdings:{},trades:[]};accounts[4].holdings={'2330':{qty:1000,price:2450}};accounts[4].trades=[{side:'BUY',code:'2330',price:2450,qty:1000}];accounts[5].holdings={'2454':{qty:1500,price:4600}};accounts[5].trades=[{side:'BUY',code:'2454',price:4600,qty:1500}];let activeAccount=1,market='全部',sort='change',side='BUY',lot='整股';const $=id=>document.getElementById(id);function money(n){return '$'+Math.round(n).toLocaleString('zh-TW')}function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.remove('show'),2200)}
-function isUser(){return activeAccount<=3}function updateAccount(){const a=accounts[activeAccount];$('accountButton').textContent=a.name;$('availableCash').textContent=money(a.cash);$('cashTop').textContent=money(a.cash);$('cashInventory').textContent=money(a.cash);$('inventoryAccount').textContent=a.name;const value=Object.values(a.holdings).reduce((x,p)=>x+p.qty*p.price,0);$('equity').textContent=money(a.cash+value);renderHoldings();renderTrades();renderPicker();renderAI()}
+const fallbackStocks=[['2330','台積電','上市','半導體',728,1.8,2370000],['2454','聯發科','上市','半導體',1095,-0.2,1810000],['2317','鴻海','上市','電子',99.3,0.7,1490000],['0050','元大台灣50','上市','ETF',74.9,0.2,930000],['2891','中信金','上市','金融',65.4,0.5,870000],['2207','和泰車','上市','汽車',111.4,-1.2,520000],['6182','合晶','上櫃','半導體',84.2,1.8,490000],['3034','聯詠','上市','半導體',539,2.3,420000],['3008','大立光','上市','光電',601,1.1,380000],['2337','旺宏','上市','記憶體',48.2,-0.9,330000]];
+const accountNames={1:'帳戶 1・主控',2:'帳戶 2・主控',3:'帳戶 3・主控',4:'帳戶 4・AI 當沖',5:'帳戶 5・AI 波段'};const accounts={};for(let i=1;i<=5;i++)accounts[i]={name:accountNames[i],cash:5000000,holdings:{},trades:[]};accounts[4].holdings={'2330':{qty:1000,price:2450}};accounts[4].trades=[{side:'BUY',code:'2330',price:2450,qty:1000}];accounts[5].holdings={'2454':{qty:1500,price:4600}};accounts[5].trades=[{side:'BUY',code:'2454',price:4600,qty:1500}];
+let activeAccount=1,market='全部',sort='change',side='BUY',lot='整股';
+let allStocks=[];let marketIndex={value:null,change:null};
+const $=id=>document.getElementById(id);
+function money(n){return '$'+Math.round(n).toLocaleString('zh-TW')}
+function formatPrice(n){const num=Number(n); return Number.isFinite(num)?num.toLocaleString('zh-TW',{maximumFractionDigits:2}):'--'}
+function parseNumber(v){if(v===null||v===undefined||v==='')return 0; const s=String(v).replace(/[,\s]/g,''); if(s===''||s==='--')return 0; const n=Number(s); return Number.isFinite(n)?n:0}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.remove('show'),2200)}
+function isUser(){return activeAccount<=3}
+function getTradingDate(){
+  const d=new Date();
+  const day=d.getDay();
+  if(day===0)d.setDate(d.getDate()-2); if(day===6)d.setDate(d.getDate()-1);
+  if(d.getHours()<9){d.setDate(d.getDate()-1);}
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return `${y}${m}${dd}`;
+}
+function normalizeTwseRow(row){
+  if(!row || !Array.isArray(row) || row.length < 9) return null;
+  const code=String(row[0]||'').trim();
+  const name=String(row[1]||'').trim();
+  if(!code || code.length<4 || !/^[0-9]+$/.test(code)) return null;
+  const close=parseNumber(row[7]);
+  const change=parseNumber(row[8]);
+  const pct = close ? (change / close) * 100 : 0;
+  return {code,name,market:'上市',price:close,change,changePct:pct,volume:parseNumber(row[2]),high:parseNumber(row[5]),low:parseNumber(row[6]),open:parseNumber(row[4])};
+}
+function normalizeTpexRow(row){
+  if(!row || !Array.isArray(row) || row.length < 8) return null;
+  const code=String(row[0]||'').trim();
+  const name=String(row[1]||'').trim();
+  if(!code || !/^[0-9]+$/.test(code)) return null;
+  const price=parseNumber(row[7] || row[6] || row[8]);
+  const change=parseNumber(row[8] || row[9] || 0);
+  const pct = price ? (change / price) * 100 : 0;
+  return {code,name,market:'上櫃',price,change,changePct:pct,volume:parseNumber(row[2]),high:parseNumber(row[5]),low:parseNumber(row[6]),open:parseNumber(row[4])};
+}
+async function fetchMarketData(){
+  const date=getTradingDate();
+  let list=[];
+  try{
+    const twseRes=await fetch(`https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=json&date=${date}&stockNo=ALL`,{cache:'no-store'});
+    const twseJson=await twseRes.json();
+    if(twseJson && Array.isArray(twseJson.data)){
+      twseJson.data.forEach(row=>{ const n=normalizeTwseRow(row); if(n) list.push(n); });
+    }
+  }catch(err){}
+  try{
+    const tpexRes=await fetch(`https://www.tpex.org.tw/web/stock/aftertrading/daily_close_quotes/stk_quote_result.php?l=zh-tw&o=json&d=${date}`,{cache:'no-store'});
+    const tpexJson=await tpexRes.json();
+    const raw=(tpexJson && Array.isArray(tpexJson.aaData))?tpexJson.aaData:((tpexJson && Array.isArray(tpexJson.data))?tpexJson.data:[]);
+    raw.forEach(row=>{ const n=normalizeTpexRow(row); if(n) list.push(n); });
+  }catch(err){}
+  if(!list.length){ list=fallbackStocks.map(([code,name,market,sector,price,changePct,volume])=>({code,name,market,price:Number(price),changePct:Number(changePct),change:Number(price*changePct/100),volume:Number(volume),open:price,high:price,low:price})); }
+  const map=new Map();
+  list.forEach(stock=>{const key=stock.code; const existing=map.get(key); if(existing){ map.set(key,{...existing,...stock, price:stock.price||existing.price, volume:stock.volume||existing.volume, change:stock.change||existing.change, changePct:stock.changePct||existing.changePct, market:(stock.market||existing.market)}); } else map.set(key,stock);});
+  allStocks=[...map.values()].filter(s=>s.price>0 && s.code).sort((a,b)=>b.price-a.price);
+  const indexRow=allStocks.find(s=>s.code==='0050') || allStocks[0];
+  marketIndex={value:indexRow ? indexRow.price : null, change:indexRow ? indexRow.changePct : null};
+  if($('indexValue')) $('indexValue').textContent = marketIndex.value ? formatPrice(marketIndex.value) : '--';
+  if($('indexChange')) {$('indexChange').textContent = marketIndex.change===null ? '--' : `${marketIndex.change>=0?'+':''}${marketIndex.change.toFixed(2)}%`; $('indexChange').className = marketIndex.change>=0 ? 'red' : 'green';}
+  const up = allStocks.filter(s=>s.changePct>0).length; const down = allStocks.filter(s=>s.changePct<0).length; $('upCount').textContent = String(up); $('downCount').textContent = String(down);
+  renderStocks();
+}
+function updateAccount(){const a=accounts[activeAccount];$('accountButton').textContent=a.name;$('availableCash').textContent=money(a.cash);$('cashTop').textContent=money(a.cash);$('cashInventory').textContent=money(a.cash);$('inventoryAccount').textContent=a.name;const value=Object.values(a.holdings).reduce((x,p)=>x+p.qty*p.price,0);$('equity').textContent=money(a.cash+value);renderHoldings();renderTrades();renderPicker();renderAI()}
 function renderPicker(){const p=$('accountPicker');p.innerHTML=[1,2,3,4,5].map(i=>`<button class="card account ${i===activeAccount?'selected':''} ${i>3?'ai':''}" data-account="${i}"><h3>${accounts[i].name}</h3><p>${i>3?'唯讀參考，AI 自動交易':'可手動買進／賣出'}</p><p>${money(accounts[i].cash)}</p></button>`).join('');p.querySelectorAll('[data-account]').forEach(b=>b.onclick=()=>{const i=Number(b.dataset.account);if(i>3){toast('AI 帳戶只能查看，請選擇帳戶 1、2 或 3');return}activeAccount=i;updateAccount();toast('已切換至 '+accounts[i].name)})}
-function renderStocks(){const q=$('search').value.trim().toLowerCase();let a=stocks.filter(s=>(market==='全部'||s[2]===market)&&(!q||(s[0]+s[1]).toLowerCase().includes(q)));a.sort((x,y)=>sort==='volume'?y[6]-x[6]:sort==='fall'?x[5]-y[5]:y[5]-x[5]);$('stockList').innerHTML=a.map((s,i)=>`<div class="stock" data-code="${s[1]}" data-price="${s[4]}"><span class="rank">${i+1}</span><span><b class="stock-name">${s[0]}</b> <span class="muted">${s[1]}</span><span class="meta">${s[2]}・${s[3]}・${s[6].toLocaleString()} 張</span></span><span class="quote">${s[4].toLocaleString()}<span class="change ${s[5]>=0?'red':'green'}">${s[5]>=0?'+':''}${s[5].toFixed(2)}%</span></span></div>`).join('')||'<div class="empty">找不到符合的股票</div>';document.querySelectorAll('.stock').forEach(x=>x.onclick=()=>{showPage('orders');$('orderCode').value=x.dataset.code;$('orderPrice').value=x.dataset.price;updateSummary()})}
-function renderHoldings(){const h=accounts[activeAccount].holdings;const keys=Object.keys(h);$('holdings').innerHTML=keys.length?keys.map(k=>`<div class="row"><span>${k}・${h[k].qty.toLocaleString()} 股</span><b>${money(h[k].qty*h[k].price)}</b></div>`).join(''):'目前沒有持股'}function renderTrades(){const t=accounts[activeAccount].trades;$('tradeHistory').innerHTML=t.length?t.slice().reverse().map(x=>`<div class="row"><span>${x.side==='BUY'?'買進':'賣出'} ${x.code}・${x.qty} 股</span><span class="${x.side==='BUY'?'red':'green'}">${money(x.price*x.qty)}</span></div>`).join(''):'尚無模擬成交紀錄'}function renderAI(){const html=[4,5].map(i=>`<div class="ai-trade"><b>${accounts[i].name}</b><p class="muted">${Object.keys(accounts[i].holdings).length?'目前持有 '+Object.keys(accounts[i].holdings).join('、'):'目前空手'}・${accounts[i].trades.length} 筆 AI 模擬紀錄</p><span class="gold">唯讀參考，不能手動操作</span></div>`).join('');$('aiReference').innerHTML=html;$('aiTrades').innerHTML=html}
+function renderStocks(){
+  const q=$('search').value.trim().toLowerCase();
+  let list = allStocks.slice();
+  if (market !== '全部') list = list.filter(s => s.market === market);
+  if (q) list = list.filter(s => (`${s.code} ${s.name}`).toLowerCase().includes(q));
+  list.sort((a,b)=>{
+    if (sort === 'volume') return (b.volume || 0) - (a.volume || 0);
+    if (sort === 'fall') return (a.changePct || 0) - (b.changePct || 0);
+    return (b.changePct || 0) - (a.changePct || 0);
+  });
+  $('stockList').innerHTML = (list.length ? list.slice(0, 25) : []).map((s,i)=>`<div class="stock" data-code="${s.code}" data-price="${s.price || 0}"><span class="rank">${i+1}</span><span><b class="stock-name">${s.name || '--'}</b> <span class="muted">${s.code}</span><span class="meta">${s.market}・${(s.sector || '市場').toString()}・${(s.volume || 0).toLocaleString()} 張</span></span><span class="quote">${formatPrice(s.price || 0)}<span class="change ${((s.changePct || 0)>=0?'red':'green')}">${(s.changePct || 0)>=0?'+':''}${(s.changePct || 0).toFixed(2)}%</span></span></div>`).join('') || '<div class="empty">找不到符合的股票</div>';
+  document.querySelectorAll('.stock').forEach(x=>x.onclick=()=>{showPage('orders');$('orderCode').value=x.dataset.code;$('orderPrice').value=x.dataset.price;updateSummary();});
+}
+function renderHoldings(){const h=accounts[activeAccount].holdings;const keys=Object.keys(h);$('holdings').innerHTML=keys.length?keys.map(k=>`<div class="row"><span>${k}・${h[k].qty.toLocaleString()} 股</span><b>${money(h[k].qty*h[k].price)}</b></div>`).join(''):'目前沒有持股'}
+function renderTrades(){const t=accounts[activeAccount].trades;$('tradeHistory').innerHTML=t.length?t.slice().reverse().map(x=>`<div class="row"><span>${x.side==='BUY'?'買進':'賣出'} ${x.code}・${x.qty} 股</span><span class="${x.side==='BUY'?'red':'green'}">${money(x.price*x.qty)}</span></div>`).join(''):'尚無模擬成交紀錄'}
+function renderAI(){const html=[4,5].map(i=>`<div class="ai-trade"><b>${accounts[i].name}</b><p class="muted">${Object.keys(accounts[i].holdings).length?'目前持有 '+Object.keys(accounts[i].holdings).join('、'):'目前空手'}・${accounts[i].trades.length} 筆 AI 模擬紀錄</p><span class="gold">唯讀參考，不能手動操作</span></div>`).join('');$('aiReference').innerHTML=html;$('aiTrades').innerHTML=html}
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.bottom button').forEach(x=>x.classList.toggle('active',x.dataset.page===id))}
 function updateSummary(){const price=Number($('orderPrice').value)||0,qty=Number($('orderQty').value)||0,amount=price*qty,fee=amount*.001425;$('summaryCode').textContent=$('orderCode').value||'—';$('summarySide').textContent=(side==='BUY'?'買進':'賣出')+'／'+lot;$('estimatedValue').textContent=money(amount);$('estimatedFee').textContent=money(fee);$('estimatedTotal').textContent=money(amount+fee)}
 $('accountButton').onclick=()=>{activeAccount=activeAccount===3?1:activeAccount+1;updateAccount();toast('已切換至 '+accounts[activeAccount].name)};document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>showPage(b.dataset.page));document.querySelectorAll('#marketTabs button').forEach(b=>b.onclick=()=>{market=b.dataset.market;document.querySelectorAll('#marketTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderStocks()});document.querySelectorAll('#sortTabs button').forEach(b=>b.onclick=()=>{sort=b.dataset.sort;document.querySelectorAll('#sortTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderStocks()});$('search').oninput=renderStocks;$('buyTab').onclick=()=>{side='BUY';$('buyTab').classList.add('active');$('sellTab').classList.remove('active');updateSummary()};$('sellTab').onclick=()=>{side='SELL';$('sellTab').classList.add('active');$('buyTab').classList.remove('active');updateSummary()};$('cancelTab').onclick=()=>{$('orderCode').value='';$('orderPrice').value='';$('orderQty').value='';updateSummary();$('orderResult').textContent='已清除委託欄位'};$('boardTab').onclick=()=>{lot='整股';$('boardTab').classList.add('active');$('oddTab').classList.remove('active');updateSummary()};$('oddTab').onclick=()=>{lot='零股';$('oddTab').classList.add('active');$('boardTab').classList.remove('active');updateSummary()};$('marketTab').onclick=()=>toast('市價模擬將以目前價格成交');$('minusPrice').onclick=()=>{$('orderPrice').value=Math.max(1,Number($('orderPrice').value)-1);updateSummary()};$('plusPrice').onclick=()=>{$('orderPrice').value=Number($('orderPrice').value)+1;updateSummary()};$('minusQty').onclick=()=>{$('orderQty').value=Math.max(1,Number($('orderQty').value)-100);updateSummary()};$('plusQty').onclick=()=>{$('orderQty').value=Number($('orderQty').value)+100;updateSummary()};$('orderCode').oninput=$('orderPrice').oninput=$('orderQty').oninput=updateSummary;
-$('submitOrder').onclick=()=>{if(!isUser())return toast('AI 帳戶不能手動下單');const code=$('orderCode').value.trim().toUpperCase(),price=Number($('orderPrice').value),qty=Number($('orderQty').value),a=accounts[activeAccount];if(!code||!price||!qty||qty<1)return toast('請填寫正確的股票、價格與數量');const amount=price*qty,fee=amount*.001425;if(side==='BUY'){if(amount+fee>a.cash)return toast('模擬餘額不足');a.cash-=amount+fee;a.holdings[code]=(a.holdings[code]||{qty:0,price}).qty+=qty}else{if(!a.holdings[code]||a.holdings[code].qty<qty)return toast('模擬持股不足');a.holdings[code].qty-=qty;a.cash+=amount-fee;if(a.holdings[code].qty===0)delete a.holdings[code]}a.trades.push({side,code,price,qty,time:new Date().toLocaleTimeString()});$('orderResult').innerHTML=`<span class="green">模擬${side==='BUY'?'買進':'賣出'}成功</span>：${code} ${qty.toLocaleString()} 股，含費用 ${money(amount+fee)}`;updateAccount();toast('模擬委託已成交')};renderStocks();updateAccount();updateSummary();
+$('submitOrder').onclick=()=>{if(!isUser())return toast('AI 帳戶不能手動下單');const code=$('orderCode').value.trim().toUpperCase(),price=Number($('orderPrice').value),qty=Number($('orderQty').value),a=accounts[activeAccount];if(!code||!price||!qty||qty<1)return toast('請填寫正確的股票、價格與數量');const amount=price*qty,fee=amount*.001425;if(side==='BUY'){if(amount+fee>a.cash)return toast('模擬餘額不足');a.cash-=amount+fee;a.holdings[code]=(a.holdings[code]||{qty:0,price}).qty+=qty}else{if(!a.holdings[code]||a.holdings[code].qty<qty)return toast('模擬持股不足');a.holdings[code].qty-=qty;a.cash+=amount-fee;if(a.holdings[code].qty===0)delete a.holdings[code]}a.trades.push({side,code,price,qty,time:new Date().toLocaleTimeString()});$('orderResult').innerHTML=`<span class="green">模擬${side==='BUY'?'買進':'賣出'}成功</span>：${code} ${qty.toLocaleString()} 股，含費用 ${money(amount+fee)}`;updateAccount();toast('模擬委託已成交')};
+renderStocks();updateAccount();updateSummary();fetchMarketData();
 </script></body></html>
