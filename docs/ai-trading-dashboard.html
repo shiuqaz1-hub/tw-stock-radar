@@ -1,39 +1,695 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>股市大富翁</title>
-<style>
-:root{--bg:#050b12;--panel:#182331;--panel2:#0c131c;--line:#2a3948;--text:#edf3f7;--muted:#8998aa;--red:#ff5d4d;--green:#36c77b;--gold:#e8d4a3}*{box-sizing:border-box}body{margin:0;background:#02070d;color:var(--text);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}.app{max-width:430px;min-height:100vh;margin:auto;background:linear-gradient(#071019,#09131d);padding-bottom:78px}.status,.top,.site,.section{padding-left:16px;padding-right:16px}.status{height:44px;padding-top:12px;display:flex;justify-content:space-between;font-weight:700}.top{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #172330}.menu{font-size:22px}.top h1{font-size:20px;margin:0}.site{padding-top:14px;padding-bottom:10px;color:var(--muted);font-size:13px}.head{margin:0 16px;padding:14px 12px;background:#121b24;border:1px solid var(--line);border-radius:18px}.headrow,.index,.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.brand{display:flex;align-items:center;gap:9px}.mark{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#202c38;border:2px solid #a84348;color:var(--red);font-weight:900}.muted{color:var(--muted)}.tag{color:var(--red);background:#43171e;padding:5px 8px;border-radius:7px;font-size:12px}.pill{border:1px solid #344453;background:#202d3a;border-radius:24px;padding:10px 12px}.index{margin-top:14px}.index strong{color:var(--red);font-size:20px}.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:14px}.mini div{padding:9px 4px;text-align:center;border:1px solid var(--line);border-radius:12px;background:#0d151e;font-size:11px;color:var(--muted)}.mini b{display:block;color:var(--text);font-size:12px;margin-top:4px}.red{color:var(--red)!important}.green{color:var(--green)!important}.gold{color:var(--gold)!important}.section{padding-top:20px}.section h2{font-size:21px;margin:0 0 12px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.tabs button{height:40px;border:1px solid var(--line);border-radius:24px;background:#1b2734;color:var(--muted);font-weight:700}.tabs button.active{color:var(--text);border-color:var(--red);background:#401a20}.search{width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:28px;background:#1b2734;color:var(--text);font-size:15px;margin:3px 0 12px}.stock-list{display:grid;gap:9px}.stock{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid #263443;border-radius:20px;padding:13px 11px}.rank{color:var(--muted);text-align:center}.name{font-weight:800;font-size:16px}.sub{color:var(--muted);font-size:13px;margin-left:5px}.meta{color:var(--muted);font-size:12px;margin-top:4px}.quote{text-align:right;font-weight:800;font-size:17px}.change{display:block;font-size:13px;margin-top:4px}.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,430px);display:flex;background:#0b1119;border-top:1px solid var(--line);z-index:3}.bottom button{flex:1;padding:11px 2px;background:none;border:0;color:var(--muted);font-size:12px}.bottom button.active{color:var(--red)}.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#263545;color:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px;display:none;z-index:5}.toast.show{display:block}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>股市大富翁</title>
+  <style>
+    :root {
+      --bg: #040b12;
+      --bg-2: #09141d;
+      --panel: rgba(16, 24, 34, 0.95);
+      --panel-2: rgba(21, 31, 42, 0.94);
+      --panel-3: rgba(12, 18, 26, 0.9);
+      --line: rgba(174, 188, 202, 0.14);
+      --text: #edf3f7;
+      --muted: rgba(203, 214, 225, 0.7);
+      --red: #ff5d4d;
+      --red-2: #ff4d4f;
+      --green: #36d399;
+      --gold: #f4d7a2;
+      --shadow: rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      background: #02070d;
+      color: var(--text);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #071019 0%, #09131d 100%);
+      border-left: 1px solid rgba(255,255,255,0.04);
+      border-right: 1px solid rgba(255,255,255,0.04);
+      padding-bottom: 80px;
+      position: relative;
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 46px;
+      padding: 12px 16px 0 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .left, .right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .signal-bars {
+      display: flex;
+      align-items: end;
+      gap: 2px;
+      height: 14px;
+    }
+
+    .signal-bars span {
+      display: block;
+      width: 2px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.9);
+    }
+
+    .signal-bars span:nth-child(1){height:4px}
+    .signal-bars span:nth-child(2){height:7px}
+    .signal-bars span:nth-child(3){height:10px}
+    .signal-bars span:nth-child(4){height:12px}
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .menu {
+      width: 22px;
+      height: 20px;
+      position: relative;
+      opacity: 0.9;
+    }
+
+    .menu::before,
+    .menu::after,
+    .menu span {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 18px;
+      height: 2px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 2px;
+    }
+
+    .menu::before { top: 3px; }
+    .menu::after { bottom: 3px; }
+    .menu span { top: 9px; }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .close {
+      width: 22px;
+      height: 22px;
+      position: relative;
+      opacity: 0.9;
+    }
+
+    .close::before,
+    .close::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22px;
+      height: 2px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 2px;
+      transform-origin: center;
+    }
+
+    .close::before { transform: translate(-50%, -50%) rotate(45deg); }
+    .close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+    .site-info {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 12px 16px 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .site-info::before {
+      content: "●";
+      color: var(--green);
+      font-size: 12px;
+    }
+
+    .header-card {
+      margin: 0 16px;
+      background: rgba(18, 26, 35, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 12px 12px 12px;
+      box-shadow: 0 12px 22px var(--shadow);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .brand-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #f5d9c5, #f0ad72);
+      color: #2a1d1d;
+      font-weight: 900;
+      font-size: 14px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-text .tiny {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .brand-text .name {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .pill.primary {
+      background: rgba(255, 93, 77, 0.15);
+      border-color: rgba(255, 93, 77, 0.38);
+      color: #fff;
+    }
+
+    .header-meta {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .index-row {
+      margin-top: 12px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .index-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .index-main {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--red);
+      letter-spacing: 0.02em;
+      margin-top: 4px;
+    }
+
+    .index-change {
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 800;
+      align-self: center;
+    }
+
+    .mini-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 8px;
+    }
+
+    .mini-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 9px 6px;
+      text-align: center;
+      min-height: 64px;
+    }
+
+    .mini-card .label {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .mini-card .value {
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .mini-card .value.red { color: var(--red); }
+    .mini-card .value.green { color: var(--green); }
+    .mini-card .value.gold { color: var(--gold); }
+
+    .section {
+      padding: 18px 16px 0 16px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .segment {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .segment button {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.025);
+      color: var(--muted);
+      border-radius: 999px;
+      height: 36px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .segment button.active {
+      background: rgba(255, 93, 77, 0.16);
+      color: var(--text);
+      border-color: rgba(255,93,77,0.36);
+    }
+
+    .segment.red-btn button.active {
+      background: linear-gradient(180deg, rgba(255,93,77,0.28), rgba(255,93,77,0.14));
+    }
+
+    .search {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.03);
+      border-radius: 999px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      margin: 2px 0 12px 0;
+      outline: none;
+    }
+
+    .search::placeholder { color: var(--muted); }
+
+    .stock-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stock-row {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 12px 10px;
+    }
+
+    .rank {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .stock-main {
+      min-width: 0;
+    }
+
+    .stock-name-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .stock-name {
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stock-code {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .stock-meta {
+      margin-top: 5px;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stock-value {
+      text-align: right;
+      min-width: 76px;
+    }
+
+    .price {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+    }
+
+    .chg {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    .chg.up { color: var(--red); }
+    .chg.down { color: var(--green); }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: min(100%, 430px);
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      background: rgba(12, 17, 24, 0.94);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(8px);
+    }
+
+    .bottom-nav button {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 10px 4px 12px 4px;
+      cursor: pointer;
+    }
+
+    .bottom-nav button.active {
+      color: var(--text);
+    }
+
+    .bottom-nav .icon {
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 84px;
+      transform: translateX(-50%);
+      background: rgba(28, 39, 50, 0.95);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+      display: none;
+      z-index: 20;
+    }
+
+    .toast.show { display: block; }
+
+    @media (max-width: 380px) {
+      .mini-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .brand-text .name { font-size: 16px; }
+      .index-main { font-size: 22px; }
+    }
+  </style>
 </head>
-<body><div class="app">
-<div class="status"><span>22:39　◔ ◍ ◉</span><span>4G+　▮▮▮ 67</span></div>
-<div class="top"><span class="menu">☰</span><h1>股市大富翁</h1><span style="margin-left:auto">×</span></div>
-<div class="site">●　台股休市・AI 仍可預約下一盤，開盤後自動撮合</div>
-<div class="head"><div class="headrow"><div class="brand"><div class="mark">許</div><div><div class="muted" style="font-size:12px">許家模擬股票</div><b>股市大富翁</b></div></div><button class="pill" data-action="操盤功能">操盤 #1 玩家</button></div><div class="row muted" style="margin-top:13px;font-size:13px"><span>● 已收盤</span><b>22:39:57</b></div><div class="index"><span class="muted">加權指數<br><strong>47,180.75</strong></span><b class="red">+1.93%</b></div><div class="mini"><div>可用資金<b>$5,000,000</b></div><div>上漲<b class="red">62</b></div><div>下跌<b class="green">29</b></div><div>AI 評估<b class="gold">中性</b></div></div></div>
-<section class="section"><h2>台股即時排行</h2><div class="tabs" id="marketTabs"><button class="active" data-market="全部">全部</button><button data-market="上市">上市</button><button data-market="上櫃">上櫃</button></div><div class="tabs" id="sortTabs"><button class="active" data-sort="change">漲幅排行</button><button data-sort="fall">跌幅排行</button><button data-sort="volume">成交量</button></div><input id="search" class="search" placeholder="搜尋代碼或名稱"><div id="stockList" class="stock-list"></div></section>
-<nav class="bottom"><button class="active" data-action="雷達">◉<br>雷達</button><button data-action="下單">◫<br>下單</button><button data-action="庫存">▣<br>庫存</button><button data-action="富翁榜">🏆<br>富翁榜</button><button data-action="排行">▤<br>排行</button></nav><div id="toast" class="toast"></div></div>
-<script>
-const stocks=[
-{name:'京元電子',code:'2449',market:'上市',industry:'半導體',price:291.5,change:10,volume:61178},
-{name:'宏致',code:'3605',market:'上市',industry:'電子零組件',price:154,change:10,volume:37969},
-{name:'世紀*',code:'5314',market:'上櫃',industry:'其他',price:30.5,change:9.91,volume:123120},
-{name:'宏齊',code:'6168',market:'上市',industry:'光電',price:38.85,change:9.9,volume:32720},
-{name:'矽格',code:'6257',market:'上市',industry:'半導體',price:244.5,change:9.89,volume:36728},
-{name:'欣銓',code:'3264',market:'上櫃',industry:'半導體',price:268.5,change:9.82,volume:28853},
-{name:'聯電',code:'2303',market:'上市',industry:'半導體',price:156,change:5.76,volume:300960},
-{name:'華邦電',code:'2344',market:'上市',industry:'半導體',price:179.5,change:5.59,volume:138585},
-{name:'合晶',code:'6182',market:'上櫃',industry:'半導體',price:116,change:4.98,volume:64336},
-{name:'聯發科',code:'2454',market:'上市',industry:'半導體',price:4710,change:4.67,volume:8991},
-{name:'和益',code:'1709',market:'上市',industry:'化學',price:39.2,change:-8.73,volume:48188},
-{name:'中信金',code:'2891',market:'上市',industry:'金融',price:69.5,change:-2.39,volume:74372},
-{name:'玉山金',code:'2884',market:'上市',industry:'金融',price:46.4,change:-1.9,volume:91401}
-];
-let market='全部', sort='change';
-const list=document.getElementById('stockList'), search=document.getElementById('search');
-function render(){const q=search.value.trim().toLowerCase();let items=stocks.filter(s=>(market==='全部'||s.market===market)&&(!q||(s.name+s.code).toLowerCase().includes(q)));items.sort((a,b)=>sort==='volume'?b.volume-a.volume:sort==='fall'?a.change-b.change:b.change-a.change);list.innerHTML=items.map((s,i)=>`<button class="stock" data-stock="${s.code}"><span class="rank">${i+1}</span><span><span class="name">${s.name}</span><span class="sub">${s.code}</span><span class="meta">${s.market} ・ ${s.industry} ・ ${s.volume.toLocaleString()} 張</span></span><span class="quote">${s.price.toLocaleString()}<span class="change ${s.change>=0?'red':'green'}">${s.change>=0?'+':''}${s.change.toFixed(2)}%</span></span></button>`).join('')||'<div class="muted" style="text-align:center;padding:30px">找不到符合的股票</div>';document.querySelectorAll('[data-stock]').forEach(x=>x.onclick=()=>showToast(`已選擇 ${x.dataset.stock}，登入功能完成後可進入下單`))}
-function showToast(text){const t=document.getElementById('toast');t.textContent=text;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),2200)}
-document.querySelectorAll('#marketTabs button').forEach(b=>b.onclick=()=>{market=b.dataset.market;document.querySelectorAll('#marketTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()});document.querySelectorAll('#sortTabs button').forEach(b=>b.onclick=()=>{sort=b.dataset.sort;document.querySelectorAll('#sortTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()});search.oninput=render;document.querySelectorAll('.bottom button,.pill').forEach(b=>b.onclick=()=>showToast(`${b.dataset.action||'操盤'} 功能目前為展示模式，登入與下單權限稍後加入`));render();
-</script></body></html>
+<body>
+  <div class="app">
+    <div class="statusbar">
+      <div class="left">
+        <span>22:39</span>
+        <span>◔</span>
+        <span>◍</span>
+        <span>◉</span>
+      </div>
+      <div class="right">
+        <span>4G+</span>
+        <div class="signal-bars"><span></span><span></span><span></span><span></span></div>
+        <span>67</span>
+      </div>
+    </div>
+
+    <div class="topbar">
+      <div class="menu"><span></span></div>
+      <h1>股市大富翁</h1>
+      <div class="close"></div>
+    </div>
+
+    <div class="site-info">台股休市・AI 仍可預約下一盤，開盤後自動撮合</div>
+
+    <div class="header-card">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-badge">許</div>
+          <div class="brand-text">
+            <div class="tiny">許家模擬股票</div>
+            <div class="name">股市大富翁</div>
+          </div>
+        </div>
+        <button class="pill primary">操盤 #1 玩家</button>
+      </div>
+
+      <div class="header-meta">
+        <span>已收盤</span>
+        <span>22:39:57</span>
+      </div>
+
+      <div class="index-row">
+        <div>
+          <div class="index-label">加權指數</div>
+          <div class="index-main">47,180.75</div>
+        </div>
+        <div class="index-change">+1.93%</div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <div class="label">可用資金</div>
+          <span class="value">$5,000,000</span>
+        </div>
+        <div class="mini-card">
+          <div class="label">上漲</div>
+          <span class="value red">62</span>
+        </div>
+        <div class="mini-card">
+          <div class="label">下跌</div>
+          <span class="value green">29</span>
+        </div>
+        <div class="mini-card">
+          <div class="label">AI 評估</div>
+          <span class="value gold">中性</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>台股即時排行</h2>
+
+      <div class="segment" id="marketTabs">
+        <button class="active" data-market="全部">全部</button>
+        <button data-market="上市">上市</button>
+        <button data-market="上櫃">上櫃</button>
+      </div>
+
+      <div class="segment red-btn" id="sortTabs">
+        <button class="active" data-sort="change">漲幅排行</button>
+        <button data-sort="fall">跌幅排行</button>
+        <button data-sort="volume">成交量</button>
+      </div>
+
+      <input id="search" class="search" type="text" placeholder="搜尋代碼或名稱" />
+
+      <div id="stockList" class="stock-list"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="active" data-nav="雷達"><span class="icon">◉</span>雷達</button>
+      <button data-nav="下單"><span class="icon">◫</span>下單</button>
+      <button data-nav="庫存"><span class="icon">▣</span>庫存</button>
+      <button data-nav="富翁榜"><span class="icon">◌</span>富翁榜</button>
+      <button data-nav="排行"><span class="icon">▤</span>排行</button>
+    </nav>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const stocks = [
+      { name: '京元電子', code: '2449', market: '上市', industry: '半導體', price: 291.5, change: 10.0, volume: 61178 },
+      { name: '宏致', code: '3605', market: '上市', industry: '電子零組件', price: 154, change: 10.0, volume: 37969 },
+      { name: '世紀', code: '5314', market: '上櫃', industry: '其他', price: 30.5, change: 9.91, volume: 123120 },
+      { name: '宏齊', code: '6168', market: '上市', industry: '光電', price: 38.85, change: 9.9, volume: 32720 },
+      { name: '矽格', code: '6257', market: '上市', industry: '半導體', price: 244.5, change: 9.89, volume: 36728 },
+      { name: '欣銓', code: '3264', market: '上櫃', industry: '半導體', price: 268.5, change: 9.82, volume: 28853 },
+      { name: '聯電', code: '2303', market: '上市', industry: '半導體', price: 156, change: 5.76, volume: 300960 },
+      { name: '華邦電', code: '2344', market: '上市', industry: '半導體', price: 179.5, change: 5.59, volume: 138585 },
+      { name: '合晶', code: '6182', market: '上櫃', industry: '半導體', price: 116, change: 4.98, volume: 64336 },
+      { name: '聯發科', code: '2454', market: '上市', industry: '半導體', price: 4710, change: 4.67, volume: 8991 },
+      { name: '和益', code: '1709', market: '上市', industry: '化學', price: 39.2, change: -8.73, volume: 48188 },
+      { name: '中信金', code: '2891', market: '上市', industry: '金融', price: 69.5, change: -2.39, volume: 74372 },
+      { name: '玉山金', code: '2884', market: '上市', industry: '金融', price: 46.4, change: -1.90, volume: 91401 },
+      { name: '國泰金', code: '2882', market: '上市', industry: '金融', price: 11.5, change: -1.34, volume: 100245 }
+    ];
+
+    let currentMarket = '全部';
+    let currentSort = 'change';
+
+    const stockList = document.getElementById('stockList');
+    const searchInput = document.getElementById('search');
+    const toast = document.getElementById('toast');
+
+    function renderStocks() {
+      const q = searchInput.value.trim().toLowerCase();
+      let items = stocks.filter((stock) => {
+        const matchMarket = currentMarket === '全部' || stock.market === currentMarket;
+        const matchText = !q || `${stock.name}${stock.code}`.toLowerCase().includes(q);
+        return matchMarket && matchText;
+      });
+
+      items.sort((a, b) => {
+        if (currentSort === 'volume') return b.volume - a.volume;
+        if (currentSort === 'fall') return a.change - b.change;
+        return b.change - a.change;
+      });
+
+      stockList.innerHTML = items.map((stock, index) => {
+        const up = stock.change >= 0;
+        return `
+          <div class="stock-row" data-code="${stock.code}">
+            <div class="rank">${index + 1}</div>
+            <div class="stock-main">
+              <div class="stock-name-line">
+                <span class="stock-name">${stock.name}</span>
+                <span class="stock-code">${stock.code}</span>
+              </div>
+              <div class="stock-meta">${stock.market} ・ ${stock.industry} ・ ${stock.volume.toLocaleString()} 張</div>
+            </div>
+            <div class="stock-value">
+              <div class="price">${stock.price.toLocaleString()}</div>
+              <span class="chg ${up ? 'up' : 'down'}">${up ? '+' : ''}${stock.change.toFixed(2)}%</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.stock-row').forEach((row) => {
+        row.addEventListener('click', () => {
+          const code = row.dataset.code;
+          showToast(`已選擇 ${code}，登入後可進入下單`);
+        });
+      });
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    document.querySelectorAll('#marketTabs button').forEach((button) => {
+      button.addEventListener('click', () => {
+        currentMarket = button.dataset.market;
+        document.querySelectorAll('#marketTabs button').forEach((el) => el.classList.remove('active'));
+        button.classList.add('active');
+        renderStocks();
+      });
+    });
+
+    document.querySelectorAll('#sortTabs button').forEach((button) => {
+      button.addEventListener('click', () => {
+        currentSort = button.dataset.sort;
+        document.querySelectorAll('#sortTabs button').forEach((el) => el.classList.remove('active'));
+        button.classList.add('active');
+        renderStocks();
+      });
+    });
+
+    searchInput.addEventListener('input', renderStocks);
+
+    document.querySelectorAll('.bottom-nav button').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.bottom-nav button').forEach((el) => el.classList.remove('active'));
+        button.classList.add('active');
+        showToast(`${button.dataset.nav} 功能目前為展示模式`);
+      });
+    });
+
+    renderStocks();
+  </script>
+</body>
+</html>
