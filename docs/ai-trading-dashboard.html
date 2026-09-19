@@ -15,6 +15,7 @@
       --blue: #8ab4ff;
       --text: #e5eef9;
       --muted: #9fb2cb;
+      --amber: #fbbf24;
     }
     * { box-sizing: border-box; }
     body {
@@ -125,6 +126,7 @@
     }
     .buy { background: rgba(34, 197, 94, 0.18); color: #7ce6aa; }
     .sell { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
+    .warn { background: rgba(251,191,36,0.18); color: #fcd34d; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -152,6 +154,10 @@
       cursor: pointer;
       background: rgba(59,130,246,0.18);
       border-color: rgba(96,165,250,0.4);
+    }
+    @media (max-width: 820px) {
+      .trade-layout { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -224,6 +230,20 @@
           </div>
         </div>
 
+        <div class="row">
+          <div>
+            <label class="muted" for="orderMode">委託方式</label>
+            <select id="orderMode">
+              <option value="market">市價</option>
+              <option value="limit">委任限價</option>
+            </select>
+          </div>
+          <div>
+            <label class="muted" for="orderTriggerTime">指定時間</label>
+            <input id="orderTriggerTime" type="time" value="09:30" />
+          </div>
+        </div>
+
         <div class="row" style="margin-top: 18px;">
           <button id="buyBtn" class="small-btn" style="background: rgba(34,197,94,0.18); border-color: rgba(74,222,128,0.4);">送出模擬下單</button>
           <button id="refreshBtn" class="small-btn">更新行情</button>
@@ -239,6 +259,24 @@
           請輸入 2330、2454、0050 等代號，系統會抓取最新行情並自動帶入下單價格。
         </div>
       </div>
+    </div>
+
+    <div class="section">
+      <h3>委託單狀態</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>股票</th>
+            <th>方向</th>
+            <th>價格</th>
+            <th>時間</th>
+            <th>狀態</th>
+          </tr>
+        </thead>
+        <tbody id="pendingOrderBody">
+          <tr><td colspan="5" class="muted">尚無委任單</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="section">
@@ -266,6 +304,7 @@
       <h3>AI 策略說明</h3>
       <p>本頁面會即時抓取上市/上櫃股票行情與 0050 指數行情，並把最新價格同步到下單欄位；模擬交易不會真正連接券商，也不會送出實際委託。</p>
       <p>如果輸入 `00`、`23`、`2454` 等關鍵字，搜尋下拉清單會自動列出候選股票，點選後會立即更新價格與市場資料。</p>
+      <p>委任單可指定時間與限價，若買進限價高於當前市價，就會等待到價格到達該價位且有賣方成交時才成交；若當日收盤前仍未觸發，則自動取消。</p>
     </div>
   </div>
 
@@ -273,7 +312,8 @@
     const state = {
       stocks: [],
       selected: null,
-      trades: []
+      trades: [],
+      pendingOrders: []
     };
 
     const stockInput = document.getElementById('stockInput');
@@ -284,17 +324,47 @@
     const orderQty = document.getElementById('orderQty');
     const orderType = document.getElementById('orderType');
     const orderMarket = document.getElementById('orderMarket');
+    const orderMode = document.getElementById('orderMode');
+    const orderTriggerTime = document.getElementById('orderTriggerTime');
     const selectedMeta = document.getElementById('selectedMeta');
     const stockDetail = document.getElementById('stockDetail');
     const tradeCount = document.getElementById('tradeCount');
     const tradeTableBody = document.getElementById('tradeTableBody');
+    const pendingOrderBody = document.getElementById('pendingOrderBody');
     const statusText = document.getElementById('statusText');
     const indexValue = document.getElementById('indexValue');
 
-    async function fetchJson(url) {
-      const res = await fetch(url, { headers: { 'User-Agent': 'tw-stock-radar/1.0' } });
-      if (!res.ok) throw new Error('fetch failed');
-      return res.json();
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return Number.isFinite(num) ? num.toLocaleString() : '0';
+    }
+
+    function getTaipeiNow() {
+      return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+    }
+
+    function isMarketOpen(date = getTaipeiNow()) {
+      const day = date.getDay();
+      if (day === 0 || day === 6) return false;
+      const minutes = date.getHours() * 60 + date.getMinutes();
+      return minutes >= 9 * 60 && minutes <= 13 * 60 + 30;
+    }
+
+    function isMarketClosed(date = getTaipeiNow()) {
+      return !isMarketOpen(date);
+    }
+
+    function formatTimeToHM(date = new Date()) {
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function fetchJson(url) {
+      return fetch(url, { headers: { 'User-Agent': 'tw-stock-radar/1.0' } }).then(async (res) => {
+        if (!res.ok) throw new Error('fetch failed');
+        return res.json();
+      });
     }
 
     async function loadMarketData() {
@@ -335,11 +405,6 @@
       suggestions.classList.add('visible');
     }
 
-    function formatNumber(value) {
-      const num = Number(value || 0);
-      return Number.isFinite(num) ? num.toLocaleString() : '0';
-    }
-
     function updateSelectedDisplay() {
       if (!state.selected) {
         selectedStock.textContent = '未選擇';
@@ -357,8 +422,8 @@
       stockDetail.innerHTML = `
         <div>股票：${state.selected.code} ${state.selected.name}</div>
         <div>市場：${state.selected.market}</div>
-        <div>成交：${formatNumber(state.selected.price)} / 漲跌：${state.selected.change >= 0 ? '+' : ''}${formatNumber(state.selected.change)} (${state.selected.changePct >= 0 ? '+' : ''}${state.selected.changePct.toFixed(2)}%)</div>
-        <div>開盤：${formatNumber(state.selected.open)} / 最高：${formatNumber(state.selected.high)} / 最低：${formatNumber(state.selected.low)}</div>
+        <div>成交：${formatNumber(state.selected.price)} / 漲跌：${state.selected.change >= 0 ? '+' : ''}${formatNumber(state.selected.change)} (${state.selected.changePct >= 0 ? '+' : ''}${formatNumber(state.selected.changePct)}%)</div>
+        <div>開盤：${formatNumber(state.selected.open)} / 最高：${formatNumber(state.selected.high)} / 最低：${formatNumber(state.selected.low)} / 收盤：${formatNumber(state.selected.close || state.selected.previous)}</div>
       `;
       orderPrice.value = String(state.selected.price || '');
       orderMarket.value = state.selected.market === '上市' ? 'tse' : 'otc';
@@ -377,7 +442,9 @@
           changePct: Number(quote.changePct || 0),
           open: Number(quote.open || 0),
           high: Number(quote.high || 0),
-          low: Number(quote.low || 0)
+          low: Number(quote.low || 0),
+          close: Number(quote.close || quote.previous || 0),
+          time: quote.time || new Date().toISOString()
         };
         stockInput.value = `${state.selected.code} ${state.selected.name}`;
         suggestions.classList.remove('visible');
@@ -424,6 +491,112 @@
       `).join('');
     }
 
+    function renderPendingOrders() {
+      if (!state.pendingOrders.length) {
+        pendingOrderBody.innerHTML = '<tr><td colspan="5" class="muted">尚無委任單</td></tr>';
+        return;
+      }
+      pendingOrderBody.innerHTML = state.pendingOrders.map((order) => `
+        <tr>
+          <td>${order.code}</td>
+          <td><span class="pill ${order.type === 'buy' ? 'buy' : 'sell'}">${order.type === 'buy' ? '買進' : '賣出'}</span></td>
+          <td>${formatNumber(order.triggerPrice)}</td>
+          <td>${order.triggerTime || '當日'} / ${order.status}</td>
+          <td>${order.statusText}</td>
+        </tr>
+      `).join('');
+    }
+
+    function createPendingOrder() {
+      if (!state.selected) {
+        alert('請先選擇股票');
+        return null;
+      }
+
+      const type = orderType.value;
+      const mode = orderMode.value;
+      const qty = Number(orderQty.value || 0);
+      const triggerPrice = Number(orderPrice.value || state.selected.price || 0);
+      const triggerTime = orderTriggerTime.value || formatTimeToHM();
+
+      if (!qty || qty <= 0) {
+        alert('數量必須大於 0');
+        return null;
+      }
+
+      const order = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        code: state.selected.code,
+        name: state.selected.name,
+        type,
+        qty,
+        mode,
+        triggerPrice,
+        triggerTime,
+        status: 'pending',
+        statusText: mode === 'limit' ? '等待觸發' : '市價單',
+        createdAt: new Date().toISOString()
+      };
+
+      if (mode === 'limit') {
+        const current = Number(state.selected.price || 0);
+        if (type === 'buy' && current > triggerPrice) {
+          order.statusText = `待買:${triggerPrice}，目前 ${current}`;
+        }
+        if (type === 'sell' && current < triggerPrice) {
+          order.statusText = `待賣:${triggerPrice}，目前 ${current}`;
+        }
+      }
+
+      return order;
+    }
+
+    function processPendingOrders() {
+      const now = getTaipeiNow();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      state.pendingOrders = state.pendingOrders.filter((order) => {
+        const currentPrice = Number(state.selected && state.selected.code === order.code ? state.selected.price : 0 || 0);
+
+        if (isMarketClosed(now)) {
+          order.status = 'cancelled';
+          order.statusText = '收盤取消';
+          return false;
+        }
+
+        if (order.mode === 'limit') {
+          const hitBuy = order.type === 'buy' && currentPrice <= order.triggerPrice;
+          const hitSell = order.type === 'sell' && currentPrice >= order.triggerPrice;
+          if (hitBuy || hitSell) {
+            appendTrade({
+              time: new Date().toLocaleString('zh-TW', { hour12: false }),
+              code: order.code,
+              type: order.type,
+              price: order.triggerPrice,
+              qty: order.qty,
+              note: `${order.mode === 'limit' ? '委任成交' : '市價成交'} · ${order.name}`
+            });
+            order.status = 'filled';
+            order.statusText = '已成交';
+            return false;
+          }
+        }
+
+        if (order.triggerTime && nowMinutes > (Number(order.triggerTime.split(':')[0]) * 60 + Number(order.triggerTime.split(':')[1]))) {
+          if (order.mode === 'limit' && order.type === 'buy' && currentPrice > order.triggerPrice) {
+            order.status = 'cancelled';
+            order.statusText = '指定時間未觸發';
+            return false;
+          }
+        }
+
+        order.statusText = order.mode === 'limit' ? '等待觸發' : '市價單';
+        return true;
+      });
+
+      renderPendingOrders();
+    }
+
     document.getElementById('stockInput').addEventListener('input', (event) => {
       const value = event.target.value;
       filterMatches(value);
@@ -441,23 +614,26 @@
     });
 
     document.getElementById('buyBtn').addEventListener('click', () => {
-      if (!state.selected) {
-        alert('請先選擇股票');
+      const pending = createPendingOrder();
+      if (!pending) return;
+
+      if (pending.mode === 'market') {
+        const fillPrice = Number(state.selected?.price || 0);
+        appendTrade({
+          time: new Date().toLocaleString('zh-TW', { hour12: false }),
+          code: state.selected.code,
+          type: pending.type,
+          price: fillPrice,
+          qty: pending.qty,
+          note: '市價單 · 立即成交'
+        });
+        statusText.textContent = `${pending.type === 'buy' ? '買進' : '賣出'}市價單已成交`;
         return;
       }
 
-      const price = Number(orderPrice.value || state.selected.price || 0);
-      const qty = Number(orderQty.value || 0);
-      const type = orderType.value;
-      appendTrade({
-        time: new Date().toLocaleString('zh-TW', { hour12: false }),
-        code: state.selected.code,
-        type,
-        price,
-        qty,
-        note: `${state.selected.name} · ${state.selected.market}`
-      });
-      statusText.textContent = `${type === 'buy' ? '買進' : '賣出'}委託已送出`;
+      state.pendingOrders.push(pending);
+      renderPendingOrders();
+      statusText.textContent = `${pending.type === 'buy' ? '買進' : '賣出'}委任單已建立`;
     });
 
     document.getElementById('refreshBtn').addEventListener('click', async () => {
@@ -491,10 +667,12 @@
       await loadMarketData();
       await refreshIndex();
       updateSelectedDisplay();
+      orderTriggerTime.value = formatTimeToHM();
       setInterval(async () => {
         await loadMarketData();
         await refreshIndex();
         await refreshSelected();
+        processPendingOrders();
       }, 5000);
     })();
   </script>
