@@ -367,11 +367,39 @@
       });
     }
 
+    function syncSelectedFromMarketList() {
+      if (!state.selected || !state.stocks.length) return false;
+
+      const marketKey = state.selected.market === '上市' ? '上市' : '上櫃';
+      const match = state.stocks.find((stock) => {
+        return String(stock.code) === String(state.selected.code) && String(stock.market) === marketKey;
+      });
+
+      if (!match) return false;
+
+      state.selected = {
+        ...state.selected,
+        price: Number(match.price || state.selected.price || 0),
+        previous: Number(match.previous || state.selected.previous || 0),
+        change: Number(match.change || state.selected.change || 0),
+        changePct: Number(match.changePct || state.selected.changePct || 0),
+        open: Number(match.open || state.selected.open || 0),
+        high: Number(match.high || state.selected.high || 0),
+        low: Number(match.low || state.selected.low || 0),
+        close: Number(match.close || match.previous || state.selected.close || state.selected.previous || 0),
+        name: String(match.name || state.selected.name || '')
+      };
+
+      updateSelectedDisplay();
+      return true;
+    }
+
     async function loadMarketData() {
       try {
         statusText.textContent = '讀取市場資料...';
         const data = await fetchJson('/api/market?market=all');
         state.stocks = Array.isArray(data?.stocks) ? data.stocks : [];
+        syncSelectedFromMarketList();
       } catch (err) {
         statusText.textContent = '市場資料載入失敗';
       }
@@ -415,17 +443,18 @@
         return;
       }
 
+      const displayPrice = Number(state.selected.price || 0);
       selectedStock.textContent = `${state.selected.code} ${state.selected.name}`;
-      selectedPrice.textContent = `NT$ ${formatNumber(state.selected.price)}`;
+      selectedPrice.textContent = `NT$ ${formatNumber(displayPrice)}`;
       selectedMeta.textContent = `${state.selected.market} · ${state.selected.code}`;
-      selectedMeta.className = `pill ${state.selected.change >= 0 ? 'buy' : 'sell'}`;
+      selectedMeta.className = `pill ${Number(state.selected.change || 0) >= 0 ? 'buy' : 'sell'}`;
       stockDetail.innerHTML = `
         <div>股票：${state.selected.code} ${state.selected.name}</div>
         <div>市場：${state.selected.market}</div>
-        <div>成交：${formatNumber(state.selected.price)} / 漲跌：${state.selected.change >= 0 ? '+' : ''}${formatNumber(state.selected.change)} (${state.selected.changePct >= 0 ? '+' : ''}${formatNumber(state.selected.changePct)}%)</div>
-        <div>開盤：${formatNumber(state.selected.open)} / 最高：${formatNumber(state.selected.high)} / 最低：${formatNumber(state.selected.low)} / 收盤：${formatNumber(state.selected.close || state.selected.previous)}</div>
+        <div>成交：${formatNumber(displayPrice)} / 漲跌：${Number(state.selected.change || 0) >= 0 ? '+' : ''}${formatNumber(state.selected.change || 0)} (${Number(state.selected.changePct || 0) >= 0 ? '+' : ''}${formatNumber(state.selected.changePct || 0)}%)</div>
+        <div>開盤：${formatNumber(state.selected.open || 0)} / 最高：${formatNumber(state.selected.high || 0)} / 最低：${formatNumber(state.selected.low || 0)} / 收盤：${formatNumber(state.selected.close || state.selected.previous || 0)}</div>
       `;
-      orderPrice.value = String(state.selected.price || '');
+      orderPrice.value = String(displayPrice || '');
       orderMarket.value = state.selected.market === '上市' ? 'tse' : 'otc';
     }
 
@@ -446,18 +475,66 @@
           close: Number(quote.close || quote.previous || 0),
           time: quote.time || new Date().toISOString()
         };
+
+        const listMatch = state.stocks.find((stock) => String(stock.code) === String(code));
+        if (listMatch) {
+          state.selected = {
+            ...state.selected,
+            market: String(listMatch.market || state.selected.market),
+            price: Number(listMatch.price || state.selected.price || 0),
+            previous: Number(listMatch.previous || state.selected.previous || 0),
+            change: Number(listMatch.change || state.selected.change || 0),
+            changePct: Number(listMatch.changePct || state.selected.changePct || 0),
+            open: Number(listMatch.open || state.selected.open || 0),
+            high: Number(listMatch.high || state.selected.high || 0),
+            low: Number(listMatch.low || state.selected.low || 0),
+            close: Number(listMatch.close || listMatch.previous || state.selected.close || state.selected.previous || 0)
+          };
+        }
+
         stockInput.value = `${state.selected.code} ${state.selected.name}`;
         suggestions.classList.remove('visible');
         suggestions.innerHTML = '';
         updateSelectedDisplay();
         statusText.textContent = '行情已更新';
       } catch (err) {
+        const fallback = state.stocks.find((stock) => String(stock.code) === String(code));
+        if (fallback) {
+          state.selected = {
+            code: String(fallback.code || code),
+            name: String(fallback.name || ''),
+            market: String(fallback.market || '上市'),
+            price: Number(fallback.price || 0),
+            previous: Number(fallback.previous || 0),
+            change: Number(fallback.change || 0),
+            changePct: Number(fallback.changePct || 0),
+            open: Number(fallback.open || 0),
+            high: Number(fallback.high || 0),
+            low: Number(fallback.low || 0),
+            close: Number(fallback.close || fallback.previous || 0),
+            time: new Date().toISOString()
+          };
+          updateSelectedDisplay();
+          statusText.textContent = '使用本地行情資料';
+          return;
+        }
         statusText.textContent = '查詢股票行情失敗';
       }
     }
 
     async function refreshIndex() {
       try {
+        const listIndex = state.stocks.find((stock) => String(stock.code) === '0050');
+        if (listIndex) {
+          const value = Number(listIndex.price || 0);
+          const change = Number(listIndex.change || 0);
+          const pct = Number(listIndex.changePct || 0);
+          indexValue.textContent = `NT$ ${formatNumber(value)}`;
+          indexValue.className = `value ${change >= 0 ? 'green' : 'red'}`;
+          indexValue.title = `${change >= 0 ? '+' : ''}${formatNumber(change)} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)`;
+          return;
+        }
+
         const quote = await fetchJson('/api/quote?code=0050&market=tse');
         const value = Number(quote.price || 0);
         const change = Number(quote.change || 0);
@@ -473,6 +550,25 @@
     async function refreshSelected() {
       if (!state.selected) return;
       const marketParam = state.selected.market === '上市' ? 'tse' : 'otc';
+      const listMatch = state.stocks.find((stock) => String(stock.code) === String(state.selected.code));
+      if (listMatch) {
+        state.selected = {
+          ...state.selected,
+          code: String(state.selected.code),
+          name: String(listMatch.name || state.selected.name),
+          market: String(listMatch.market || state.selected.market),
+          price: Number(listMatch.price || state.selected.price || 0),
+          previous: Number(listMatch.previous || state.selected.previous || 0),
+          change: Number(listMatch.change || state.selected.change || 0),
+          changePct: Number(listMatch.changePct || state.selected.changePct || 0),
+          open: Number(listMatch.open || state.selected.open || 0),
+          high: Number(listMatch.high || state.selected.high || 0),
+          low: Number(listMatch.low || state.selected.low || 0),
+          close: Number(listMatch.close || listMatch.previous || state.selected.close || state.selected.previous || 0)
+        };
+        updateSelectedDisplay();
+        return;
+      }
       await selectStock(state.selected.code, marketParam);
     }
 
@@ -582,8 +678,9 @@
           }
         }
 
-        if (order.triggerTime && nowMinutes > (Number(order.triggerTime.split(':')[0]) * 60 + Number(order.triggerTime.split(':')[1]))) {
-          if (order.mode === 'limit' && order.type === 'buy' && currentPrice > order.triggerPrice) {
+        if (order.triggerTime) {
+          const targetMinutes = Number(order.triggerTime.split(':')[0]) * 60 + Number(order.triggerTime.split(':')[1]);
+          if (nowMinutes >= targetMinutes && order.mode === 'limit') {
             order.status = 'cancelled';
             order.statusText = '指定時間未觸發';
             return false;
